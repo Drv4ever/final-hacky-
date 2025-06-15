@@ -31,7 +31,7 @@ function ResumeInterviewApp() {
     formData.append("resume", file);
 
     try {
-      const response = await fetch("https://final-hacky-backend.onrender.com", {
+      const response = await fetch("https://final-hacky-backend.onrender.com/process-resume", {
         method: "POST",
         body: formData,
       });
