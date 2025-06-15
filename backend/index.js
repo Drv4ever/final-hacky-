@@ -2,7 +2,6 @@ import express from "express";
 import multer from "multer";
 import cors from "cors";
 import { GoogleGenAI } from "@google/genai";
-import path from "path";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -10,7 +9,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
-// ✅ Allow both local and deployed frontend origins
+// ✅ CORS setup
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://final-hacky-frontend1.onrender.com"],
@@ -18,13 +17,16 @@ app.use(
     allowedHeaders: ["Content-Type"],
   })
 );
-app.options("*", cors()); // ✅ Handle preflight
 
+// ✅ Root route (prevents "Cannot GET /")
+app.get("/", (req, res) => {
+  res.send("Backend is up and running.");
+});
+
+// ✅ Multer config
 const upload = multer({
   dest: "media/",
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
-  },
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -41,10 +43,7 @@ app.post("/process-resume", upload.single("resume"), async (req, res) => {
     });
 
     const fileName = myfile.name;
-    console.log("Uploaded File Name:", fileName);
-
     const fetchedFile = await ai.files.get({ name: fileName });
-    console.log("Fetched File:", fetchedFile);
 
     const result = await ai.models.generateContent({
       model: "models/gemini-1.5-flash",
@@ -68,7 +67,6 @@ app.post("/process-resume", upload.single("resume"), async (req, res) => {
 
     const responseText =
       result.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
-    console.log("Gemini response:", responseText);
 
     res.json({
       questions: [
