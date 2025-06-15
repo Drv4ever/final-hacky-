@@ -8,18 +8,22 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT ||3001;
+const port = process.env.PORT || 3001;
 
+// ✅ Allow both local and deployed frontend origins
 app.use(
   cors({
-    origin: "http://localhost:5173",
-  }),
+    origin: ["http://localhost:5173", "https://final-hacky-frontend1.onrender.com"],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+  })
 );
+app.options("*", cors()); // ✅ Handle preflight
 
 const upload = multer({
   dest: "media/",
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB
   },
 });
 
